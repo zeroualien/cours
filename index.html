@@ -1,256 +1,107 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Bibliothèque de Cours</title>
+    <title>Cours</title>
 
-    <!-- Initialisation immédiate du thème (protégée pour les environnements sandboxés) -->
+    <!-- Application immédiate du thème en 0ms avant affichage -->
     <script>
         (function () {
-            var theme = 'light';
+            var t = 'light';
             try {
-                var saved = window.localStorage && localStorage.getItem('theme');
-                if (saved === 'dark' || saved === 'light') {
-                    theme = saved;
+                var s = window.localStorage && localStorage.getItem('theme');
+                if (s === 'dark' || s === 'light') {
+                    t = s;
                 } else if (window.name === 'theme:dark' || window.name === 'theme:light') {
-                    theme = window.name.split(':')[1];
+                    t = window.name.split(':')[1];
                 } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    theme = 'dark';
+                    t = 'dark';
                 }
-            } catch (e) {
-                try {
-                    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                        theme = 'dark';
-                    }
-                } catch (err) {}
-            }
-            document.documentElement.setAttribute('data-theme', theme);
-            document.documentElement.style.colorScheme = theme;
+            } catch (e) {}
+            document.documentElement.setAttribute('data-theme', t);
+            document.documentElement.style.colorScheme = t;
         })();
     </script>
 
-    <!-- Rendu mathématique KaTeX -->
+    <!-- KaTeX -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-        onload="window.renderAllMath && window.renderAllMath(document.body);"></script>
-
-    <!-- Styles dynamiques scopés pour les cours chargés -->
-    <style id="dynamic-course-styles"></style>
+        onload="window.renderMath && window.renderMath(document.body);"></script>
 
     <style>
-        /* ================= SYSTÈME DE DESIGN APPLE (LIGHT & DARK) ================= */
+        /* ================= PALETTES SANS TRANSITION (ZÉRO ÉBLOUISSEMENT) ================= */
         :root,
         :root[data-theme="light"] {
             color-scheme: light;
-            --bg-canvas: #F5F5F7;
-            --bg-sidebar: rgba(242, 242, 247, 0.78);
-            --bg-toolbar: rgba(245, 245, 247, 0.82);
-            --bg-surface: #FFFFFF;
-            --bg-elevated: #FFFFFF;
-            --bg-hover: rgba(0, 0, 0, 0.035);
-            --bg-active: rgba(0, 0, 0, 0.065);
-            --bg-selected: rgba(0, 0, 0, 0.08);
-            --bg-input: rgba(118, 118, 128, 0.12);
-
-            --text-primary: #1D1D1F;
-            --text-secondary: #6E6E73;
-            --text-tertiary: #8E8E93;
-
-            --accent-color: #007AFF;
-            --border-hairline: rgba(0, 0, 0, 0.085);
-            --border-row: rgba(60, 60, 67, 0.08);
-            --focus-ring: rgba(0, 122, 255, 0.28);
-            --surface-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 0 0 0.5px rgba(0, 0, 0, 0.075);
+            --bg: #F5F5F7;
+            --surface: #FFFFFF;
+            --surface-2: #EEEEF0;
+            --hover: rgba(0, 0, 0, 0.04);
+            --active: rgba(0, 0, 0, 0.08);
+            --text: #1D1D1F;
+            --text-2: #515154;
+            --text-3: #86868B;
+            --border: rgba(0, 0, 0, 0.09);
+            --accent: #0066CC;
         }
 
         :root[data-theme="dark"] {
             color-scheme: dark;
-            --bg-canvas: #121214;
-            --bg-sidebar: rgba(24, 24, 27, 0.78);
-            --bg-toolbar: rgba(18, 18, 20, 0.82);
-            --bg-surface: #1C1C1F;
-            --bg-elevated: #242428;
-            --bg-hover: rgba(255, 255, 255, 0.045);
-            --bg-active: rgba(255, 255, 255, 0.085);
-            --bg-selected: rgba(255, 255, 255, 0.11);
-            --bg-input: rgba(118, 118, 128, 0.24);
-
-            --text-primary: #F5F5F7;
-            --text-secondary: #98989F;
-            --text-tertiary: #636366;
-
-            --accent-color: #0A84FF;
-            --border-hairline: rgba(255, 255, 255, 0.09);
-            --border-row: rgba(255, 255, 255, 0.07);
-            --focus-ring: rgba(10, 132, 255, 0.35);
-            --surface-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 0.5px rgba(255, 255, 255, 0.085);
+            --bg: #111113;
+            --surface: #1A1A1D;
+            --surface-2: #242428;
+            --hover: rgba(255, 255, 255, 0.05);
+            --active: rgba(255, 255, 255, 0.1);
+            --text: #F5F5F7;
+            --text-2: #A1A1A6;
+            --text-3: #636366;
+            --border: rgba(255, 255, 255, 0.09);
+            --accent: #409CFF;
         }
 
-        /* ================= RESET & BASE ================= */
         *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
         }
 
-        html {
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
+        html, body {
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, system-ui, sans-serif;
             -webkit-text-size-adjust: 100%;
-            transition: background-color 0.2s ease, color 0.15s ease;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Inter, system-ui, sans-serif;
-            background-color: var(--bg-canvas);
-            color: var(--text-primary);
-            display: flex;
-            min-height: 100dvh;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-            transition: background-color 0.2s ease, color 0.15s ease;
-        }
-
-        /* ================= BARRE LATÉRALE (SIDEBAR) ================= */
-        .sidebar {
-            width: 252px;
-            flex-shrink: 0;
-            background: var(--bg-sidebar);
-            backdrop-filter: blur(30px) saturate(190%);
-            -webkit-backdrop-filter: blur(30px) saturate(190%);
-            border-right: 0.5px solid var(--border-hairline);
-            padding: 1.25rem 0.75rem;
-            display: flex;
-            flex-direction: column;
+        /* ================= BARRE SUPÉRIEURE COMPACTE ================= */
+        .topbar {
             position: sticky;
             top: 0;
-            height: 100dvh;
-            user-select: none;
-            z-index: 30;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
+            z-index: 50;
+            background-color: var(--bg);
+            border-bottom: 1px solid var(--border);
         }
 
-        .sidebar-group-title {
-            font-size: 0.68rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.055em;
-            color: var(--text-tertiary);
-            padding: 0.35rem 0.65rem 0.45rem;
-        }
-
-        .nav-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .nav-btn {
-            width: 100%;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font: inherit;
-            font-size: 0.85rem;
-            font-weight: 450;
-            letter-spacing: -0.008em;
-            padding: 0.48rem 0.68rem;
-            border-radius: 8px;
+        .topbar-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0.5rem 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            cursor: pointer;
-            transition: background-color 0.14s ease, color 0.14s ease, transform 0.1s ease;
-            text-align: left;
-            -webkit-tap-highlight-color: transparent;
+            gap: 0.75rem;
+            min-height: 48px;
         }
 
-        .nav-btn:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        .nav-btn:active {
-            transform: scale(0.99);
-        }
-
-        .nav-btn.active {
-            background: var(--bg-selected);
-            color: var(--text-primary);
-            font-weight: 560;
-        }
-
-        .nav-btn-left {
+        .topbar-left {
             display: flex;
             align-items: center;
-            gap: 0.65rem;
-            min-width: 0;
-        }
-
-        .nav-icon {
-            width: 17px;
-            height: 17px;
-            flex-shrink: 0;
-            color: var(--text-secondary);
-            transition: color 0.14s ease;
-        }
-
-        .nav-btn:hover .nav-icon,
-        .nav-btn.active .nav-icon {
-            color: var(--text-primary);
-        }
-
-        .badge-count {
-            font-size: 0.73rem;
-            font-weight: 460;
-            color: var(--text-tertiary);
-            font-variant-numeric: tabular-nums;
-            margin-left: 0.35rem;
-        }
-
-        .nav-btn.active .badge-count {
-            color: var(--text-secondary);
-        }
-
-        /* ================= ZONE PRINCIPALE & TOOLBAR ================= */
-        .main-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            max-width: 100%;
-        }
-
-        .toolbar {
-            position: sticky;
-            top: 0;
-            z-index: 25;
-            min-height: 54px;
-            background: var(--bg-toolbar);
-            backdrop-filter: blur(26px) saturate(190%);
-            -webkit-backdrop-filter: blur(26px) saturate(190%);
-            border-bottom: 0.5px solid var(--border-hairline);
-            padding: 0.45rem 2.25rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.85rem;
-            transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-
-        .toolbar-left {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
+            gap: 0.6rem;
             min-width: 0;
             flex: 1;
         }
@@ -259,909 +110,681 @@
             display: none;
             align-items: center;
             gap: 0.25rem;
-            border: 0.5px solid var(--border-hairline);
-            background: var(--bg-surface);
-            color: var(--text-primary);
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.28rem 0.6rem 0.28rem 0.4rem;
             font: inherit;
-            font-size: 0.81rem;
-            font-weight: 520;
-            padding: 0.32rem 0.65rem 0.32rem 0.42rem;
-            border-radius: 7px;
+            font-size: 0.82rem;
+            font-weight: 500;
             cursor: pointer;
             flex-shrink: 0;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-            transition: background-color 0.12s ease;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .back-btn:hover {
-            background: var(--bg-hover);
+            background: var(--hover);
         }
 
-        .back-btn:active {
-            background: var(--bg-active);
-        }
-
-        body.reading-mode .back-btn {
+        body.is-reading .back-btn {
             display: inline-flex;
         }
 
-        .toolbar-title {
-            display: flex;
-            align-items: baseline;
-            gap: 0.65rem;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .toolbar-title h1 {
-            font-size: 1.04rem;
+        .page-title {
+            font-size: 0.98rem;
             font-weight: 600;
-            letter-spacing: -0.015em;
-            text-transform: capitalize;
+            letter-spacing: -0.01em;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        body.reading-mode .toolbar-title h1 {
-            text-transform: none;
-            font-size: 0.92rem;
-            font-weight: 550;
-        }
-
-        .toolbar-subtitle {
-            font-size: 0.78rem;
-            color: var(--text-tertiary);
+        .count-badge {
+            font-size: 0.76rem;
+            color: var(--text-3);
             font-variant-numeric: tabular-nums;
             flex-shrink: 0;
         }
 
-        body.reading-mode .toolbar-subtitle,
-        body.reading-mode .search-wrapper {
-            display: none;
+        body.is-reading .count-badge,
+        body.is-reading .search-box,
+        body.is-reading .filter-bar {
+            display: none !important;
         }
 
-        .toolbar-actions {
+        .topbar-right {
             display: flex;
             align-items: center;
-            gap: 0.55rem;
+            gap: 0.5rem;
             flex-shrink: 0;
         }
 
-        /* Barre de recherche native macOS */
-        .search-wrapper {
+        /* Recherche */
+        .search-box {
             position: relative;
-            width: 248px;
-            max-width: 100%;
+            width: 220px;
         }
 
         .search-icon {
             position: absolute;
-            left: 9px;
+            left: 8px;
             top: 50%;
             transform: translateY(-50%);
-            width: 13.5px;
-            height: 13.5px;
-            color: var(--text-tertiary);
+            width: 13px;
+            height: 13px;
+            color: var(--text-3);
             pointer-events: none;
         }
 
-        .search-bar {
+        .search-input {
             width: 100%;
-            height: 31px;
-            padding: 0 2.1rem 0 1.9rem;
-            background: var(--bg-input);
-            border: 0.5px solid transparent;
-            border-radius: 8px;
-            color: var(--text-primary);
+            height: 30px;
+            padding: 0 1.8rem 0 1.75rem;
+            background: var(--surface-2);
+            border: 1px solid transparent;
+            border-radius: 6px;
+            color: var(--text);
             font: inherit;
             font-size: 0.82rem;
-            letter-spacing: -0.005em;
             outline: none;
-            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
         }
 
-        .search-bar::placeholder {
-            color: var(--text-tertiary);
+        .search-input::placeholder {
+            color: var(--text-3);
         }
 
-        .search-bar:focus {
-            background: var(--bg-surface);
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px var(--focus-ring);
-        }
-
-        .kbd-hint {
-            position: absolute;
-            right: 7px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.65rem;
-            font-weight: 500;
-            color: var(--text-tertiary);
-            background: var(--bg-surface);
-            padding: 1px 5px;
-            border-radius: 4px;
-            border: 0.5px solid var(--border-hairline);
-            pointer-events: none;
+        .search-input:focus {
+            background: var(--surface);
+            border-color: var(--accent);
         }
 
         .clear-btn {
             position: absolute;
-            right: 6px;
+            right: 5px;
             top: 50%;
             transform: translateY(-50%);
-            width: 17px;
-            height: 17px;
+            width: 16px;
+            height: 16px;
             border: none;
             background: transparent;
-            color: var(--text-tertiary);
+            color: var(--text-3);
             cursor: pointer;
             display: none;
             align-items: center;
             justify-content: center;
-            padding: 0;
         }
 
-        .clear-btn:hover {
-            color: var(--text-secondary);
-        }
-
-        /* Bouton Thème (icône Lune / Soleil seule) */
+        /* Bouton Thème (Lune / Soleil seul) */
         .theme-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background-color 0.14s ease, color 0.14s ease, transform 0.1s ease;
             flex-shrink: 0;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .theme-btn:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
+            background: var(--hover);
         }
 
-        .theme-btn:active {
-            transform: scale(0.92);
+        .theme-btn .icon-moon { display: none; }
+        .theme-btn .icon-sun { display: block; }
+        :root[data-theme="light"] .theme-btn .icon-moon { display: block; }
+        :root[data-theme="light"] .theme-btn .icon-sun { display: none; }
+
+        /* Barre horizontale des matières (zéro marge latérale gauche) */
+        .filter-bar {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 1rem 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .theme-btn .icon-moon {
+        .filter-bar::-webkit-scrollbar {
             display: none;
         }
 
-        .theme-btn .icon-sun {
-            display: block;
+        .filter-pill {
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-2);
+            font: inherit;
+            font-size: 0.81rem;
+            font-weight: 500;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-shrink: 0;
         }
 
-        :root[data-theme="light"] .theme-btn .icon-moon {
-            display: block;
+        .filter-pill:hover {
+            background: var(--hover);
+            color: var(--text);
         }
 
-        :root[data-theme="light"] .theme-btn .icon-sun {
-            display: none;
+        .filter-pill.active {
+            background: var(--surface-2);
+            color: var(--text);
+            border-color: var(--border);
+            font-weight: 600;
         }
 
-        /* ================= GRILLE DES COURS ================= */
-        .content-container {
-            max-width: 840px;
+        .pill-count {
+            font-size: 0.72rem;
+            color: var(--text-3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* ================= LISTE DES CHAPITRES (PLEINE LARGEUR UTILE) ================= */
+        .main-container {
+            max-width: 1180px;
             width: 100%;
             margin: 0 auto;
-            padding: 2rem 2.25rem 4.5rem;
+            padding: 1rem 1rem 3rem;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.25rem;
         }
 
-        body.reading-mode .content-container {
+        body.is-reading .main-container {
             display: none !important;
         }
 
-        .card {
+        .subject-section {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            min-width: 0;
+            gap: 0.35rem;
         }
 
-        .group-header {
+        .subject-header {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            padding: 0 0.3rem;
+            padding: 0 0.2rem;
         }
 
-        .group-header h2 {
-            font-size: 0.76rem;
+        .subject-header h2 {
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: var(--text-secondary);
+            color: var(--text-2);
         }
 
-        .group-meta {
-            font-size: 0.73rem;
-            color: var(--text-tertiary);
-            font-variant-numeric: tabular-nums;
+        .subject-meta {
+            font-size: 0.72rem;
+            color: var(--text-3);
         }
 
-        .course-list {
+        .chapter-list {
             list-style: none;
-            background: var(--bg-surface);
-            border-radius: 11px;
-            box-shadow: var(--surface-shadow);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
             overflow: hidden;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .course-list li {
-            position: relative;
+        .chapter-list li + li {
+            border-top: 1px solid var(--border);
         }
 
-        .course-list li:not(:last-child)::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 3.15rem;
-            right: 0;
-            height: 0.5px;
-            background: var(--border-row);
-        }
-
-        .course-list a {
+        .chapter-list a {
             display: flex;
             align-items: center;
-            gap: 0.85rem;
-            padding: 0.78rem 1.05rem;
+            gap: 0.65rem;
+            padding: 0.62rem 0.85rem;
             text-decoration: none;
-            color: var(--text-primary);
-            font-size: 0.89rem;
-            font-weight: 430;
-            letter-spacing: -0.008em;
-            line-height: 1.45;
-            transition: background-color 0.12s ease;
-            min-width: 0;
-            -webkit-tap-highlight-color: transparent;
+            color: var(--text);
+            font-size: 0.88rem;
+            line-height: 1.4;
         }
 
-        .course-list a:hover {
-            background-color: var(--bg-hover);
+        .chapter-list a:hover {
+            background: var(--hover);
         }
 
-        .course-list a:active {
-            background-color: var(--bg-active);
+        .chapter-list a:active {
+            background: var(--active);
         }
 
         .chap-num {
-            width: 1.45rem;
-            color: var(--text-tertiary);
-            font-size: 0.77rem;
-            font-weight: 520;
+            min-width: 1.25rem;
+            color: var(--text-3);
+            font-size: 0.8rem;
+            font-weight: 500;
             font-variant-numeric: tabular-nums;
             text-align: right;
             flex-shrink: 0;
-            transition: color 0.12s ease;
-        }
-
-        .course-list a:hover .chap-num {
-            color: var(--text-secondary);
         }
 
         .chap-title {
             flex: 1;
             min-width: 0;
-            overflow-wrap: break-word;
-            word-break: break-word;
         }
 
-        .chap-title .katex {
-            font-size: 0.96em;
-        }
-
-        .chevron-icon {
-            width: 14px;
-            height: 14px;
-            color: var(--text-tertiary);
+        .chap-arrow {
+            width: 13px;
+            height: 13px;
+            color: var(--text-3);
             flex-shrink: 0;
-            margin-left: 0.35rem;
-            transition: transform 0.15s ease, color 0.15s ease;
         }
 
-        .course-list a:hover .chevron-icon {
-            transform: translateX(2.5px);
-            color: var(--text-secondary);
-        }
-
-        .empty-state {
+        .empty-msg {
             display: none;
             text-align: center;
-            padding: 4.5rem 1rem;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
+            padding: 3rem 1rem;
+            color: var(--text-2);
+            font-size: 0.88rem;
         }
 
-        /* ================= LECTEUR DE COURS INTÉGRÉ ================= */
-        .reader-view {
+        /* ================= LECTEUR DE CHAPITRE (ZÉRO MARGE SUPERFLUE & ZÉRO FLASH) ================= */
+        .reader-container {
             display: none;
+            max-width: 1180px;
             width: 100%;
-            max-width: 880px;
             margin: 0 auto;
-            padding: 2rem 2.25rem 5rem;
+            padding: 1rem 1rem 4rem;
         }
 
-        body.reading-mode .reader-view {
+        body.is-reading .reader-container {
             display: block;
         }
 
-        #reader-article {
+        #course-viewer {
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
-            background-color: var(--bg-canvas) !important;
-            color: var(--text-primary) !important;
-            font-size: 0.95rem;
-            line-height: 1.7;
-            transition: background-color 0.2s ease, color 0.15s ease;
+            background-color: var(--bg) !important;
+            color: var(--text) !important;
+            font-size: 0.94rem;
+            line-height: 1.65;
         }
 
-        /* Harmonisation automatique Clair / Sombre du contenu du cours */
-        #reader-article,
-        #reader-article main,
-        #reader-article article,
-        #reader-article section,
-        #reader-article .container,
-        #reader-article .content,
-        #reader-article .wrapper,
-        #reader-article .page {
-            background: transparent !important;
-            color: var(--text-primary) !important;
+        /* Forçage strict des couleurs du thème sur tout le contenu du cours (aucun fond blanc possible en mode sombre) */
+        #course-viewer *,
+        #course-viewer *::before,
+        #course-viewer *::after {
+            transition: none !important;
+        }
+
+        #course-viewer div,
+        #course-viewer section,
+        #course-viewer article,
+        #course-viewer main,
+        #course-viewer header,
+        #course-viewer footer,
+        #course-viewer aside {
+            background-color: transparent !important;
+            color: var(--text) !important;
             max-width: 100% !important;
-            width: 100% !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
             box-shadow: none !important;
         }
 
-        #reader-article h1,
-        #reader-article h2,
-        #reader-article h3,
-        #reader-article h4,
-        #reader-article h5,
-        #reader-article h6 {
-            color: var(--text-primary) !important;
-            font-weight: 650;
-            letter-spacing: -0.015em;
-            line-height: 1.35;
-            margin-top: 1.8rem;
-            margin-bottom: 0.75rem;
-            overflow-wrap: break-word;
+        #course-viewer .container,
+        #course-viewer .content,
+        #course-viewer .wrapper,
+        #course-viewer .page {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
-        #reader-article h1 {
-            font-size: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-hairline) !important;
+        #course-viewer h1,
+        #course-viewer h2,
+        #course-viewer h3,
+        #course-viewer h4 {
+            color: var(--text) !important;
+            font-weight: 600;
+            line-height: 1.3;
+            margin: 1.4rem 0 0.6rem;
         }
 
-        #reader-article h2 {
-            font-size: 1.24rem;
+        #course-viewer h1 {
+            font-size: 1.38rem;
             padding-bottom: 0.4rem;
-            border-bottom: 1px solid var(--border-hairline) !important;
+            border-bottom: 1px solid var(--border) !important;
         }
 
-        #reader-article h3 {
-            font-size: 1.06rem;
+        #course-viewer h2 {
+            font-size: 1.16rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid var(--border) !important;
         }
 
-        #reader-article p,
-        #reader-article li,
-        #reader-article dd,
-        #reader-article dt {
-            color: var(--text-primary) !important;
-            margin-bottom: 0.75rem;
-            overflow-wrap: break-word;
+        #course-viewer h3 {
+            font-size: 1.02rem;
         }
 
-        #reader-article ul,
-        #reader-article ol {
-            padding-left: 1.35rem;
-            margin-bottom: 1rem;
+        #course-viewer p,
+        #course-viewer li {
+            color: var(--text) !important;
+            margin-bottom: 0.6rem;
         }
 
-        #reader-article a {
-            color: var(--accent-color) !important;
+        #course-viewer ul,
+        #course-viewer ol {
+            padding-left: 1.25rem;
+            margin-bottom: 0.8rem;
         }
 
-        #reader-article blockquote,
-        #reader-article .callout,
-        #reader-article .justification,
-        #reader-article .box,
-        #reader-article .card,
-        #reader-article .theorem,
-        #reader-article .definition,
-        #reader-article .remark,
-        #reader-article .note,
-        #reader-article .proof {
-            background-color: var(--bg-surface) !important;
-            color: var(--text-secondary) !important;
-            border: 0.5px solid var(--border-hairline) !important;
-            border-left: 3.5px solid var(--accent-color) !important;
-            border-radius: 9px !important;
-            padding: 0.85rem 1.1rem !important;
-            margin: 1.1rem 0 !important;
+        #course-viewer a {
+            color: var(--accent) !important;
+        }
+
+        /* Encadrés, justifications, théorèmes */
+        #course-viewer blockquote,
+        #course-viewer .callout,
+        #course-viewer .justification,
+        #course-viewer .box,
+        #course-viewer .card,
+        #course-viewer .theorem,
+        #course-viewer .definition,
+        #course-viewer .remark,
+        #course-viewer .note,
+        #course-viewer .proof {
+            background-color: var(--surface) !important;
+            color: var(--text-2) !important;
+            border: 1px solid var(--border) !important;
+            border-left: 3px solid var(--accent) !important;
+            border-radius: 6px !important;
+            padding: 0.7rem 0.9rem !important;
+            margin: 0.85rem 0 !important;
             max-width: 100% !important;
             overflow-x: auto !important;
-            box-shadow: var(--surface-shadow) !important;
         }
 
-        #reader-article blockquote *,
-        #reader-article .callout *,
-        #reader-article .justification * {
-            color: var(--text-secondary) !important;
+        #course-viewer blockquote *,
+        #course-viewer .callout *,
+        #course-viewer .justification * {
+            color: var(--text-2) !important;
         }
 
-        /* Anti-débordement des équations KaTeX sur smartphone Android */
-        #reader-article .katex-display {
+        /* Équations KaTeX : défilement horizontal fluide sans troncature ni marge superflue */
+        #course-viewer .katex-display {
             display: block !important;
             width: 100% !important;
             max-width: 100% !important;
             overflow-x: auto !important;
             overflow-y: hidden !important;
             -webkit-overflow-scrolling: touch !important;
-            padding: 0.5rem 0.25rem !important;
-            margin: 0.85rem 0 !important;
-            color: var(--text-primary) !important;
+            padding: 0.35rem 0.1rem !important;
+            margin: 0.6rem 0 !important;
+            color: var(--text) !important;
         }
 
-        #reader-article .katex {
-            color: var(--text-primary) !important;
+        #course-viewer .katex {
+            color: var(--text) !important;
         }
 
-        #reader-article .katex .fbox,
-        #reader-article .katex .boxpad {
-            border-color: var(--text-primary) !important;
+        #course-viewer .katex .fbox,
+        #course-viewer .katex .boxpad {
+            border-color: var(--text) !important;
         }
 
-        #reader-article table {
+        #course-viewer table {
             display: block !important;
             width: 100% !important;
             max-width: 100% !important;
             overflow-x: auto !important;
             border-collapse: collapse !important;
-            margin: 1.2rem 0 !important;
-            -webkit-overflow-scrolling: touch !important;
+            margin: 0.85rem 0 !important;
         }
 
-        #reader-article th,
-        #reader-article td {
-            border: 1px solid var(--border-hairline) !important;
-            padding: 0.55rem 0.75rem !important;
-            background-color: var(--bg-surface) !important;
-            color: var(--text-primary) !important;
+        #course-viewer th,
+        #course-viewer td {
+            border: 1px solid var(--border) !important;
+            padding: 0.45rem 0.65rem !important;
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
         }
 
-        #reader-article pre,
-        #reader-article code {
-            background-color: var(--bg-surface) !important;
-            color: var(--text-primary) !important;
-            border-radius: 6px;
+        #course-viewer pre,
+        #course-viewer code {
+            background-color: var(--surface) !important;
+            color: var(--text) !important;
+            border-radius: 5px;
             max-width: 100% !important;
             overflow-x: auto !important;
         }
 
-        #reader-article img,
-        #reader-article svg,
-        #reader-article canvas,
-        #reader-article video {
+        #course-viewer img,
+        #course-viewer svg,
+        #course-viewer canvas {
             max-width: 100% !important;
             height: auto !important;
         }
 
-        .reader-card-notice {
-            background: var(--bg-surface);
-            border-radius: 12px;
-            box-shadow: var(--surface-shadow);
-            padding: 2rem 1.5rem;
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .reader-card-notice h2 {
-            font-size: 1.1rem;
-            margin-top: 0 !important;
-            border: none !important;
-        }
-
-        .reader-card-notice p {
-            color: var(--text-secondary) !important;
-            font-size: 0.88rem;
-            max-width: 460px;
-            margin: 0.5rem auto 1.25rem !important;
-        }
-
-        .reader-open-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            background: var(--accent-color);
-            color: #FFFFFF !important;
-            text-decoration: none !important;
-            font-size: 0.84rem;
-            font-weight: 550;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-        }
-
-        /* ================= RESPONSIVE MOBILE & TABLETTE ================= */
-        @media (max-width: 768px) {
-            body {
-                flex-direction: column;
+        /* ================= RESPONSIVE MOBILE (MARGES MINIMALES) ================= */
+        @media (max-width: 640px) {
+            .topbar-inner {
+                padding: 0.4rem 0.65rem;
+                gap: 0.45rem;
             }
 
-            .sidebar-group-title {
+            .filter-bar {
+                padding: 0 0.65rem 0.45rem;
+            }
+
+            .count-badge {
                 display: none;
             }
 
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                border-right: none;
-                border-bottom: 0.5px solid var(--border-hairline);
-                padding: 0.55rem 0.85rem;
-                flex-direction: row;
-                overflow-x: auto;
-                overflow-y: hidden;
-                gap: 0.35rem;
-                scrollbar-width: none;
-                -webkit-overflow-scrolling: touch;
+            .search-box {
+                width: clamp(115px, 42vw, 170px);
             }
 
-            .sidebar::-webkit-scrollbar {
-                display: none;
+            .main-container,
+            .reader-container {
+                padding: 0.65rem 0.65rem 2.5rem;
             }
 
-            body.reading-mode .sidebar {
-                display: none;
-            }
-
-            .nav-list {
-                flex-direction: row;
-                gap: 0.35rem;
-                flex-shrink: 0;
-            }
-
-            .nav-btn {
-                width: auto;
-                white-space: nowrap;
-                padding: 0.42rem 0.7rem;
-                gap: 0.4rem;
-            }
-
-            .toolbar {
-                padding: 0.4rem 0.85rem;
+            .chapter-list a {
+                padding: 0.55rem 0.65rem;
                 gap: 0.5rem;
+                font-size: 0.84rem;
             }
 
-            .toolbar-subtitle,
-            .kbd-hint {
-                display: none;
+            #course-viewer {
+                font-size: 0.9rem;
             }
 
-            .search-wrapper {
-                width: clamp(125px, 43vw, 190px);
-            }
-
-            .search-bar {
-                font-size: 0.85rem;
-                padding-right: 1.6rem;
-            }
-
-            .content-container {
-                padding: 1.25rem 0.85rem 3.5rem;
-                gap: 1.5rem;
-            }
-
-            .reader-view {
-                padding: 1.15rem 0.9rem 4rem;
-            }
-
-            #reader-article {
-                font-size: 0.92rem;
-            }
-
-            #reader-article .katex-display {
-                font-size: 0.88em !important;
-            }
-
-            .course-list a {
-                padding: 0.74rem 0.85rem;
-                gap: 0.65rem;
-                font-size: 0.86rem;
-            }
-
-            .course-list li:not(:last-child)::after {
-                left: 2.65rem;
+            #course-viewer .katex-display {
+                font-size: 0.86em !important;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- BARRE LATÉRALE -->
-    <aside class="sidebar">
-        <div class="sidebar-group-title">Bibliothèque</div>
-        <ul class="nav-list">
-            <li>
-                <button type="button" class="nav-btn active" data-filter="all">
-                    <span class="nav-btn-left">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3.5" y="3.5" width="7" height="7" rx="1.75"></rect>
-                            <rect x="13.5" y="3.5" width="7" height="7" rx="1.75"></rect>
-                            <rect x="3.5" y="13.5" width="7" height="7" rx="1.75"></rect>
-                            <rect x="13.5" y="13.5" width="7" height="7" rx="1.75"></rect>
-                        </svg>
-                        <span>Tous les cours</span>
-                    </span>
-                    <span class="badge-count">38</span>
-                </button>
-            </li>
-        </ul>
-
-        <div class="sidebar-group-title" style="margin-top: 1rem;">Matières</div>
-        <ul class="nav-list">
-            <li>
-                <button type="button" class="nav-btn" data-filter="maths 1">
-                    <span class="nav-btn-left">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 3v9m0 0l7.5 4.5M12 12L4.5 16.5"></path>
-                            <polyline points="9.5 5.5 12 3 14.5 5.5"></polyline>
-                            <polyline points="19 13.5 19.5 16.5 16.5 17.5"></polyline>
-                            <polyline points="7.5 17.5 4.5 16.5 5 13.5"></polyline>
-                        </svg>
-                        <span>Maths 1</span>
-                    </span>
-                    <span class="badge-count">10</span>
-                </button>
-            </li>
-            <li>
-                <button type="button" class="nav-btn" data-filter="quantique">
-                    <span class="nav-btn-left">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"></circle>
-                            <ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(30 12 12)"></ellipse>
-                            <ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(-30 12 12)"></ellipse>
-                            <ellipse cx="12" cy="12" rx="9.5" ry="3.8" transform="rotate(90 12 12)"></ellipse>
-                        </svg>
-                        <span>Quantique</span>
-                    </span>
-                    <span class="badge-count">7</span>
-                </button>
-            </li>
-            <li>
-                <button type="button" class="nav-btn" data-filter="élec">
-                    <span class="nav-btn-left">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M2.5 12C4.5 5 7.5 5 9.5 12s5 7 7 0 3-4.5 5 0"></path>
-                            <line x1="2.5" y1="12" x2="21.5" y2="12" stroke-opacity="0.28" stroke-dasharray="2 2"></line>
-                        </svg>
-                        <span>Élec</span>
-                    </span>
-                    <span class="badge-count">8</span>
-                </button>
-            </li>
-            <li>
-                <button type="button" class="nav-btn" data-filter="optique">
-                    <span class="nav-btn-left">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="11.5 4 4 19 19 19"></polygon>
-                            <line x1="2" y1="13" x2="7.5" y2="12"></line>
-                            <line x1="15.2" y1="11.5" x2="21.5" y2="9.5"></line>
-                            <line x1="16.3" y1="13.8" x2="21.5" y2="13.8"></line>
-                            <line x1="17.5" y1="16" x2="21.5" y2="17.8"></line>
-                        </svg>
-                        <span>Optique</span>
-                    </span>
-                    <span class="badge-count">5</span>
-                </button>
-            </li>
-            <li>
-                <button type="button" class="nav-btn" data-filter="fluides">
-                    <span class="nav-btn-left">
-                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 8.5h13.5a2.5 2.5 0 1 0-2.5-2.5"></path>
-                            <path d="M3 12.5h15.5a2.5 2.5 0 1 1-2.5 2.5"></path>
-                            <path d="M3 16.5h9.5a2 2 0 1 1-2 2"></path>
-                        </svg>
-                        <span>Fluides</span>
-                    </span>
-                    <span class="badge-count">8</span>
-                </button>
-            </li>
-        </ul>
-    </aside>
-
-    <!-- ZONE PRINCIPALE -->
-    <div class="main-view">
-        <header class="toolbar">
-            <div class="toolbar-left">
-                <button type="button" class="back-btn" id="back-to-list" aria-label="Retour aux cours">
-                    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- EN-TÊTE PLEINE LARGEUR SANS BARRE LATÉRALE GAUCHE -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-left">
+                <button type="button" class="back-btn" id="back-btn">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="10 3.5 5.5 8 10 12.5"></polyline>
                     </svg>
                     <span>Cours</span>
                 </button>
-
-                <div class="toolbar-title">
-                    <h1 id="current-view-title">Tous les cours</h1>
-                    <span class="toolbar-subtitle" id="visible-count">38 chapitres</span>
-                </div>
+                <h1 class="page-title" id="view-title">Tous les cours</h1>
+                <span class="count-badge" id="total-count">38 chapitres</span>
             </div>
 
-            <div class="toolbar-actions">
-                <div class="search-wrapper">
+            <div class="topbar-right">
+                <div class="search-box">
                     <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
                         <circle cx="8.5" cy="8.5" r="5.5"></circle>
                         <line x1="12.8" y1="12.8" x2="17" y2="17" stroke-linecap="round"></line>
                     </svg>
-                    <input type="text" id="search" class="search-bar" placeholder="Rechercher..." autocomplete="off">
-                    <span class="kbd-hint" id="kbd-hint">⌘K</span>
-                    <button type="button" class="clear-btn" id="clear-search" aria-label="Effacer la recherche">
-                        <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                    <input type="text" id="search-input" class="search-input" placeholder="Rechercher..." autocomplete="off">
+                    <button type="button" class="clear-btn" id="clear-btn" aria-label="Effacer">
+                        <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm3.2 10.1a.75.75 0 01-1.06 1.06L10 11.06l-2.14 2.1a.75.75 0 01-1.06-1.06L8.94 10 6.8 7.86a.75.75 0 111.06-1.06L10 8.94l2.14-2.14a.75.75 0 111.06 1.06L11.06 10l2.14 2.1z"/>
                         </svg>
                     </button>
                 </div>
 
-                <button type="button" class="theme-btn" id="theme-toggle" title="Basculer l'apparence" aria-label="Basculer l'apparence">
-                    <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <button type="button" class="theme-btn" id="theme-toggle" aria-label="Thème">
+                    <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="4.5"></circle>
                         <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
                     </svg>
-                    <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                     </svg>
                 </button>
             </div>
-        </header>
-
-        <!-- LISTE DES CHAPITRES (pré-formatée en HTML pour un rendu KaTeX immédiat et sans conflit) -->
-        <main class="content-container" id="course-grid">
-
-            <!-- MATHS 1 -->
-            <section class="card" data-subject="maths 1">
-                <div class="group-header">
-                    <h2>maths 1</h2>
-                    <span class="group-meta">10 chapitres</span>
-                </div>
-                <ul class="course-list">
-                    <li><a href="maths/maths-section-1.html"><span class="chap-num">01</span><span class="chap-title">Fondements du calcul indiciel et convention de sommation d'Einstein</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-2.html"><span class="chap-num">02</span><span class="chap-title">Symboles de Kronecker ($\delta_{ij}$) et d'antisymétrie de Levi-Civita ($\epsilon_{ijk}$)</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-3.html"><span class="chap-num">03</span><span class="chap-title">Algèbre vectorielle et changements de base orthonormée en notation indicielle</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-4.html"><span class="chap-num">04</span><span class="chap-title">Opérateurs différentiels cartésiens et démonstrations d'identités d'analyse vectorielle</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-5.html"><span class="chap-num">05</span><span class="chap-title">Théorèmes intégraux (Green-Ostrogradski, Stokes, gradient) et applications physiques</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-6.html"><span class="chap-num">06</span><span class="chap-title">Introduction physique aux tenseurs et structure algébrique des tenseurs d'ordre 2</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-7.html"><span class="chap-num">07</span><span class="chap-title">Produits contractés (simples et doubles) et tenseurs d'ordre supérieur</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-8.html"><span class="chap-num">08</span><span class="chap-title">Changements de base, critères de tensorialité, diagonalisation et tenseurs isotropes</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-9.html"><span class="chap-num">09</span><span class="chap-title">Analyse tensorielle en coordonnées cartésiennes et mécanique des milieux continus</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="maths/maths-section-10.html"><span class="chap-num">10</span><span class="chap-title">Analyse tensorielle en coordonnées curvilignes orthogonales</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                </ul>
-            </section>
-
-            <!-- QUANTIQUE -->
-            <section class="card" data-subject="quantique">
-                <div class="group-header">
-                    <h2>quantique</h2>
-                    <span class="group-meta">7 chapitres</span>
-                </div>
-                <ul class="course-list">
-                    <li><a href="quantique/quantique-section-1.html"><span class="chap-num">01</span><span class="chap-title">Origines quantiques, dualité onde-corpuscule et paquet d'ondes</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="quantique/quantique-section-2.html"><span class="chap-num">02</span><span class="chap-title">Principe de correspondance, équation de Schrödinger et interprétation probabiliste de Born</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="quantique/quantique-section-3.html"><span class="chap-num">03</span><span class="chap-title">Équation de Schrödinger stationnaire et résolution des potentiels canoniques</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="quantique/quantique-section-4.html"><span class="chap-num">04</span><span class="chap-title">Transformation de Fourier, représentation impulsionnelle et relations d'incertitude de Heisenberg</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="quantique/quantique-section-5.html"><span class="chap-num">05</span><span class="chap-title">Espaces fonctionnels $L^p$, géométrie de l'espace de Hilbert et bases continues $\{|x\rangle\}, \{|p\rangle\}$</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="quantique/quantique-section-6.html"><span class="chap-num">06</span><span class="chap-title">Algèbre des opérateurs linéaires, adjonction, projecteurs et relation de fermeture</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="quantique/quantique-section-7.html"><span class="chap-num">07</span><span class="chap-title">Propriétés spectrales des observables, commutateurs et méthodes canoniques de diagonalisation</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                </ul>
-            </section>
-
-            <!-- ÉLEC -->
-            <section class="card" data-subject="élec">
-                <div class="group-header">
-                    <h2>élec</h2>
-                    <span class="group-meta">8 chapitres</span>
-                </div>
-                <ul class="course-list">
-                    <li><a href="élec/élec-section-1.html"><span class="chap-num">01</span><span class="chap-title">Les équations de Maxwell et les opérateurs vectoriels</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-2.html"><span class="chap-num">02</span><span class="chap-title">Potentiels électromagnétiques et conditions de jauge</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-3.html"><span class="chap-num">03</span><span class="chap-title">Ondes électromagnétiques dans le vide</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-4.html"><span class="chap-num">04</span><span class="chap-title">Dispersion et vitesse de propagation</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-5.html"><span class="chap-num">05</span><span class="chap-title">Polarisation des ondes électromagnétiques</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-6.html"><span class="chap-num">06</span><span class="chap-title">Énergie électromagnétique</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-7.html"><span class="chap-num">07</span><span class="chap-title">Rayonnement et potentiels retardés</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="élec/élec-section-8.html"><span class="chap-num">08</span><span class="chap-title">Le dipôle de Hertz</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                </ul>
-            </section>
-
-            <!-- OPTIQUE -->
-            <section class="card" data-subject="optique">
-                <div class="group-header">
-                    <h2>optique</h2>
-                    <span class="group-meta">5 chapitres</span>
-                </div>
-                <ul class="course-list">
-                    <li><a href="optique/optique-section-1.html"><span class="chap-num">01</span><span class="chap-title">Rappels d'optique géométrique et représentation scalaire des ondes lumineuses</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="optique/optique-section-2.html"><span class="chap-num">02</span><span class="chap-title">Interférences à deux ondes et expérience des trous d'Young</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="optique/optique-section-3.html"><span class="chap-num">03</span><span class="chap-title">Les interféromètres et le résonateur de Fabry-Pérot</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="optique/optique-section-4.html"><span class="chap-num">04</span><span class="chap-title">Introduction à la cohérence et modèle des trains d'onde</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="optique/optique-section-5.html"><span class="chap-num">05</span><span class="chap-title">Cohérence temporelle en lumière polychromatique et théorème de Wiener-Khintchine</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                </ul>
-            </section>
-
-            <!-- FLUIDES -->
-            <section class="card" data-subject="fluides">
-                <div class="group-header">
-                    <h2>fluides</h2>
-                    <span class="group-meta">8 chapitres</span>
-                </div>
-                <ul class="course-list">
-                    <li><a href="fluides/fluides-section-1.html"><span class="chap-num">01</span><span class="chap-title">États de la matière, approche des milieux continus et lois fondamentales de l'hydrostatique</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-2.html"><span class="chap-num">02</span><span class="chap-title">Poussée d'Archimède, théorème de Pascal et hydrostatique en référentiel non galiléen</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-3.html"><span class="chap-num">03</span><span class="chap-title">Cinématique des fluides : descriptions lagrangienne et eulérienne, dérivée particulaire et lignes d'écoulement</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-4.html"><span class="chap-num">04</span><span class="chap-title">Conservation de la masse, incompressibilité et conservation du débit</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-5.html"><span class="chap-num">05</span><span class="chap-title">Cinématique des déformations, vorticité et étude du cisaillement simple</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-6.html"><span class="chap-num">06</span><span class="chap-title">Dynamique des fluides parfaits : nombre de Reynolds, équation d'Euler et théorème de Bernoulli</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-7.html"><span class="chap-num">07</span><span class="chap-title">Applications du théorème de Bernoulli, machines hydrauliques et paradoxe de d'Alembert</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                    <li><a href="fluides/fluides-section-8.html"><span class="chap-num">08</span><span class="chap-title">Étude complète de la pince de Bernoulli, limites du fluide parfait, pertes de charge et formulaire général</span><svg class="chevron-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
-                </ul>
-            </section>
-
-            <div class="empty-state" id="empty-state">
-                Aucun cours ne correspond à votre recherche.
-            </div>
-
-        </main>
-
-        <!-- LECTEUR DE COURS INTÉGRÉ -->
-        <div class="reader-view" id="reader-view">
-            <article id="reader-article"></article>
         </div>
+
+        <!-- BARRE DE FILTRES DES MATIÈRES -->
+        <nav class="filter-bar" aria-label="Matières">
+            <button type="button" class="filter-pill active" data-filter="all">Tous <span class="pill-count">38</span></button>
+            <button type="button" class="filter-pill" data-filter="maths 1">Maths 1 <span class="pill-count">10</span></button>
+            <button type="button" class="filter-pill" data-filter="quantique">Quantique <span class="pill-count">7</span></button>
+            <button type="button" class="filter-pill" data-filter="élec">Élec <span class="pill-count">8</span></button>
+            <button type="button" class="filter-pill" data-filter="optique">Optique <span class="pill-count">5</span></button>
+            <button type="button" class="filter-pill" data-filter="fluides">Fluides <span class="pill-count">8</span></button>
+        </nav>
+    </header>
+
+    <!-- CONTENU PRINCIPAL (NUMÉROTATION 1, 2, 3...) -->
+    <main class="main-container" id="course-grid">
+
+        <!-- MATHS 1 -->
+        <section class="subject-section" data-subject="maths 1">
+            <div class="subject-header">
+                <h2>Maths 1</h2>
+                <span class="subject-meta">10 chapitres</span>
+            </div>
+            <ul class="chapter-list">
+                <li><a href="maths/maths-section-1.html"><span class="chap-num">1.</span><span class="chap-title">Fondements du calcul indiciel et convention de sommation d'Einstein</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-2.html"><span class="chap-num">2.</span><span class="chap-title">Symboles de Kronecker ($\delta_{ij}$) et d'antisymétrie de Levi-Civita ($\epsilon_{ijk}$)</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-3.html"><span class="chap-num">3.</span><span class="chap-title">Algèbre vectorielle et changements de base orthonormée en notation indicielle</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-4.html"><span class="chap-num">4.</span><span class="chap-title">Opérateurs différentiels cartésiens et démonstrations d'identités d'analyse vectorielle</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-5.html"><span class="chap-num">5.</span><span class="chap-title">Théorèmes intégraux (Green-Ostrogradski, Stokes, gradient) et applications physiques</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-6.html"><span class="chap-num">6.</span><span class="chap-title">Introduction physique aux tenseurs et structure algébrique des tenseurs d'ordre 2</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-7.html"><span class="chap-num">7.</span><span class="chap-title">Produits contractés (simples et doubles) et tenseurs d'ordre supérieur</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-8.html"><span class="chap-num">8.</span><span class="chap-title">Changements de base, critères de tensorialité, diagonalisation et tenseurs isotropes</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-9.html"><span class="chap-num">9.</span><span class="chap-title">Analyse tensorielle en coordonnées cartésiennes et mécanique des milieux continus</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="maths/maths-section-10.html"><span class="chap-num">10.</span><span class="chap-title">Analyse tensorielle en coordonnées curvilignes orthogonales</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+            </ul>
+        </section>
+
+        <!-- QUANTIQUE -->
+        <section class="subject-section" data-subject="quantique">
+            <div class="subject-header">
+                <h2>Quantique</h2>
+                <span class="subject-meta">7 chapitres</span>
+            </div>
+            <ul class="chapter-list">
+                <li><a href="quantique/quantique-section-1.html"><span class="chap-num">1.</span><span class="chap-title">Origines quantiques, dualité onde-corpuscule et paquet d'ondes</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="quantique/quantique-section-2.html"><span class="chap-num">2.</span><span class="chap-title">Principe de correspondance, équation de Schrödinger et interprétation probabiliste de Born</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="quantique/quantique-section-3.html"><span class="chap-num">3.</span><span class="chap-title">Équation de Schrödinger stationnaire et résolution des potentiels canoniques</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="quantique/quantique-section-4.html"><span class="chap-num">4.</span><span class="chap-title">Transformation de Fourier, représentation impulsionnelle et relations d'incertitude de Heisenberg</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="quantique/quantique-section-5.html"><span class="chap-num">5.</span><span class="chap-title">Espaces fonctionnels $L^p$, géométrie de l'espace de Hilbert et bases continues $\{|x\rangle\}, \{|p\rangle\}$</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="quantique/quantique-section-6.html"><span class="chap-num">6.</span><span class="chap-title">Algèbre des opérateurs linéaires, adjonction, projecteurs et relation de fermeture</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="quantique/quantique-section-7.html"><span class="chap-num">7.</span><span class="chap-title">Propriétés spectrales des observables, commutateurs et méthodes canoniques de diagonalisation</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+            </ul>
+        </section>
+
+        <!-- ÉLEC -->
+        <section class="subject-section" data-subject="élec">
+            <div class="subject-header">
+                <h2>Élec</h2>
+                <span class="subject-meta">8 chapitres</span>
+            </div>
+            <ul class="chapter-list">
+                <li><a href="élec/élec-section-1.html"><span class="chap-num">1.</span><span class="chap-title">Les équations de Maxwell et les opérateurs vectoriels</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-2.html"><span class="chap-num">2.</span><span class="chap-title">Potentiels électromagnétiques et conditions de jauge</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-3.html"><span class="chap-num">3.</span><span class="chap-title">Ondes électromagnétiques dans le vide</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-4.html"><span class="chap-num">4.</span><span class="chap-title">Dispersion et vitesse de propagation</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-5.html"><span class="chap-num">5.</span><span class="chap-title">Polarisation des ondes électromagnétiques</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-6.html"><span class="chap-num">6.</span><span class="chap-title">Énergie électromagnétique</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-7.html"><span class="chap-num">7.</span><span class="chap-title">Rayonnement et potentiels retardés</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="élec/élec-section-8.html"><span class="chap-num">8.</span><span class="chap-title">Le dipôle de Hertz</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+            </ul>
+        </section>
+
+        <!-- OPTIQUE -->
+        <section class="subject-section" data-subject="optique">
+            <div class="subject-header">
+                <h2>Optique</h2>
+                <span class="subject-meta">5 chapitres</span>
+            </div>
+            <ul class="chapter-list">
+                <li><a href="optique/optique-section-1.html"><span class="chap-num">1.</span><span class="chap-title">Rappels d'optique géométrique et représentation scalaire des ondes lumineuses</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="optique/optique-section-2.html"><span class="chap-num">2.</span><span class="chap-title">Interférences à deux ondes et expérience des trous d'Young</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="optique/optique-section-3.html"><span class="chap-num">3.</span><span class="chap-title">Les interféromètres et le résonateur de Fabry-Pérot</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="optique/optique-section-4.html"><span class="chap-num">4.</span><span class="chap-title">Introduction à la cohérence et modèle des trains d'onde</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="optique/optique-section-5.html"><span class="chap-num">5.</span><span class="chap-title">Cohérence temporelle en lumière polychromatique et théorème de Wiener-Khintchine</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+            </ul>
+        </section>
+
+        <!-- FLUIDES -->
+        <section class="subject-section" data-subject="fluides">
+            <div class="subject-header">
+                <h2>Fluides</h2>
+                <span class="subject-meta">8 chapitres</span>
+            </div>
+            <ul class="chapter-list">
+                <li><a href="fluides/fluides-section-1.html"><span class="chap-num">1.</span><span class="chap-title">États de la matière, approche des milieux continus et lois fondamentales de l'hydrostatique</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-2.html"><span class="chap-num">2.</span><span class="chap-title">Poussée d'Archimède, théorème de Pascal et hydrostatique en référentiel non galiléen</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-3.html"><span class="chap-num">3.</span><span class="chap-title">Cinématique des fluides : descriptions lagrangienne et eulérienne, dérivée particulaire et lignes d'écoulement</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-4.html"><span class="chap-num">4.</span><span class="chap-title">Conservation de la masse, incompressibilité et conservation du débit</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-5.html"><span class="chap-num">5.</span><span class="chap-title">Cinématique des déformations, vorticité et étude du cisaillement simple</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-6.html"><span class="chap-num">6.</span><span class="chap-title">Dynamique des fluides parfaits : nombre de Reynolds, équation d'Euler et théorème de Bernoulli</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-7.html"><span class="chap-num">7.</span><span class="chap-title">Applications du théorème de Bernoulli, machines hydrauliques et paradoxe de d'Alembert</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+                <li><a href="fluides/fluides-section-8.html"><span class="chap-num">8.</span><span class="chap-title">Étude complète de la pince de Bernoulli, limites du fluide parfait, pertes de charge et formulaire général</span><svg class="chap-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 3.5 10.5 8 6 12.5"></polyline></svg></a></li>
+            </ul>
+        </section>
+
+        <div class="empty-msg" id="empty-msg">Aucun chapitre ne correspond à votre recherche.</div>
+    </main>
+
+    <!-- LECTEUR DE COURS PLEINE LARGEUR -->
+    <div class="reader-container" id="reader-container">
+        <article id="course-viewer"></article>
     </div>
 
     <script>
         (function () {
             const root = document.documentElement;
             const themeBtn = document.getElementById('theme-toggle');
-            const searchInput = document.getElementById('search');
-            const clearBtn = document.getElementById('clear-search');
-            const kbdHint = document.getElementById('kbd-hint');
-            const cards = document.querySelectorAll('.card');
-            const navButtons = document.querySelectorAll('.nav-btn');
-            const viewTitle = document.getElementById('current-view-title');
-            const visibleCountEl = document.getElementById('visible-count');
-            const emptyState = document.getElementById('empty-state');
-            const backBtn = document.getElementById('back-to-list');
-            const readerArticle = document.getElementById('reader-article');
-            const dynamicCourseStyles = document.getElementById('dynamic-course-styles');
+            const searchInput = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-btn');
+            const filterPills = document.querySelectorAll('.filter-pill');
+            const sections = document.querySelectorAll('.subject-section');
+            const viewTitle = document.getElementById('view-title');
+            const totalCountEl = document.getElementById('total-count');
+            const emptyMsg = document.getElementById('empty-msg');
+            const backBtn = document.getElementById('back-btn');
+            const courseViewer = document.getElementById('course-viewer');
 
             let activeCategory = 'all';
-            let savedScrollPosition = 0;
+            let savedScrollY = 0;
+            const courseCache = new Map();
 
-            // 1. Rendu mathématique KaTeX (Titres + Contenu des cours)
-            window.renderAllMath = function (target) {
+            // 1. Rendu KaTeX
+            window.renderMath = function (el) {
                 if (typeof window.renderMathInElement === 'function') {
                     try {
-                        window.renderMathInElement(target || document.body, {
+                        window.renderMathInElement(el || document.body, {
                             delimiters: [
                                 { left: '$$', right: '$$', display: true },
                                 { left: '\\[', right: '\\]', display: true },
@@ -1174,247 +797,187 @@
                 }
             };
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function () {
-                    window.renderAllMath(document.body);
-                });
+            if (document.readyState !== 'loading') {
+                window.renderMath(document.body);
             } else {
-                window.renderAllMath(document.body);
+                document.addEventListener('DOMContentLoaded', function () {
+                    window.renderMath(document.body);
+                });
             }
 
-            // 2. Gestion du Dark Mode / Light Mode (sans éblouissement et résistant aux sandboxes)
-            function getTheme() {
-                return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-            }
-
-            function setTheme(nextTheme) {
-                root.setAttribute('data-theme', nextTheme);
-                root.style.colorScheme = nextTheme;
-                try {
-                    window.name = 'theme:' + nextTheme;
-                } catch (e) {}
-                try {
-                    window.localStorage && localStorage.setItem('theme', nextTheme);
-                } catch (e) {}
-            }
-
+            // 2. Bascule Clair / Sombre instantanée (0ms, zéro éblouissement)
             themeBtn.addEventListener('click', function () {
-                setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+                const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                root.setAttribute('data-theme', next);
+                root.style.colorScheme = next;
+                try { window.name = 'theme:' + next; } catch (e) {}
+                try { window.localStorage && localStorage.setItem('theme', next); } catch (e) {}
             });
 
-            // 3. Recherche et filtrage par matière (insensible aux accents)
-            function normalizeText(str) {
-                return (str || '')
-                    .toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .trim();
+            // 3. Filtrage & Recherche ultra-rapide
+            function norm(s) {
+                return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
             }
 
-            function updateSearchControls() {
-                const hasText = searchInput.value.length > 0;
-                clearBtn.style.display = hasText ? 'inline-flex' : 'none';
-                kbdHint.style.display = (hasText || document.activeElement === searchInput) ? 'none' : '';
-            }
+            function filterList() {
+                const q = norm(searchInput.value);
+                clearBtn.style.display = searchInput.value.length > 0 ? 'inline-flex' : 'none';
+                let total = 0;
 
-            function filterCourses() {
-                const query = normalizeText(searchInput.value);
-                let totalVisible = 0;
-
-                cards.forEach(function (card) {
-                    const subjectRaw = (card.getAttribute('data-subject') || '').toLowerCase();
-                    const subjectNorm = normalizeText(subjectRaw);
-                    const matchesCategory = (activeCategory === 'all' || subjectRaw === activeCategory);
-
-                    if (!matchesCategory) {
-                        card.style.display = 'none';
+                sections.forEach(function (sec) {
+                    const subj = (sec.getAttribute('data-subject') || '').toLowerCase();
+                    const subjNorm = norm(subj);
+                    if (activeCategory !== 'all' && subj !== activeCategory) {
+                        sec.style.display = 'none';
                         return;
                     }
 
-                    const items = card.querySelectorAll('.course-list li');
-                    const metaEl = card.querySelector('.group-meta');
-                    let sectionCount = 0;
+                    const items = sec.querySelectorAll('.chapter-list li');
+                    const meta = sec.querySelector('.subject-meta');
+                    let count = 0;
 
                     items.forEach(function (li) {
-                        const itemText = normalizeText(li.textContent);
-                        if (!query || itemText.indexOf(query) !== -1 || subjectNorm.indexOf(query) !== -1) {
+                        const txt = norm(li.textContent);
+                        if (!q || txt.indexOf(q) !== -1 || subjNorm.indexOf(q) !== -1) {
                             li.style.display = '';
-                            sectionCount++;
-                            totalVisible++;
+                            count++;
+                            total++;
                         } else {
                             li.style.display = 'none';
                         }
                     });
 
-                    if (metaEl) {
-                        metaEl.textContent = sectionCount + ' chapitre' + (sectionCount > 1 ? 's' : '');
-                    }
-                    card.style.display = sectionCount > 0 ? '' : 'none';
+                    if (meta) meta.textContent = count + ' chapitre' + (count > 1 ? 's' : '');
+                    sec.style.display = count > 0 ? '' : 'none';
                 });
 
-                visibleCountEl.textContent = totalVisible + ' chapitre' + (totalVisible > 1 ? 's' : '');
-                emptyState.style.display = totalVisible === 0 ? 'block' : 'none';
-                updateSearchControls();
+                totalCountEl.textContent = total + ' chapitre' + (total > 1 ? 's' : '');
+                emptyMsg.style.display = total === 0 ? 'block' : 'none';
             }
 
-            navButtons.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    navButtons.forEach(function (b) { b.classList.remove('active'); });
-                    btn.classList.add('active');
-                    activeCategory = (btn.getAttribute('data-filter') || 'all').toLowerCase();
-
-                    if (document.body.classList.contains('reading-mode')) {
-                        closeCourseReader(true);
-                    }
-
-                    viewTitle.textContent = activeCategory === 'all' ? 'Tous les cours' : activeCategory;
-                    filterCourses();
+            filterPills.forEach(function (pill) {
+                pill.addEventListener('click', function () {
+                    filterPills.forEach(function (p) { p.classList.remove('active'); });
+                    pill.classList.add('active');
+                    activeCategory = (pill.getAttribute('data-filter') || 'all').toLowerCase();
+                    if (document.body.classList.contains('is-reading')) closeChapter(true);
+                    viewTitle.textContent = activeCategory === 'all' ? 'Tous les cours' : pill.firstChild.textContent.trim();
+                    filterList();
                 });
             });
 
-            searchInput.addEventListener('input', filterCourses);
-            searchInput.addEventListener('focus', updateSearchControls);
-            searchInput.addEventListener('blur', updateSearchControls);
-
+            searchInput.addEventListener('input', filterList);
             clearBtn.addEventListener('click', function () {
                 searchInput.value = '';
                 searchInput.focus();
-                filterCourses();
+                filterList();
             });
 
-            // 4. Lecteur de cours intégré (GitHub Pages + Aperçu isolé)
-            function scopeCourseCSS(css) {
-                return (css || '')
-                    .replace(/:root/g, '#reader-article')
-                    .replace(/\b(html|body)\b/g, '#reader-article');
-            }
-
-            async function fetchCourseContent(href) {
-                const urls = [href, encodeURI(href.normalize('NFC')), encodeURI(href.normalize('NFD'))];
-                for (let i = 0; i < urls.length; i++) {
-                    try {
-                        const res = await fetch(urls[i]);
-                        if (res && res.ok) {
-                            return await res.text();
-                        }
-                    } catch (e) {}
-                }
+            // 4. Préchargement en cache mémoire + Ouverture instantanée des chapitres
+            async function getChapterHTML(href) {
+                if (courseCache.has(href)) return courseCache.get(href);
+                try {
+                    const res = await fetch(href);
+                    if (res && res.ok) {
+                        const text = await res.text();
+                        courseCache.set(href, text);
+                        return text;
+                    }
+                } catch (e) {}
                 return null;
             }
 
-            async function openCourseReader(href, title, pushState) {
+            async function openChapter(href, title, pushHistory) {
                 if (window.location.protocol === 'file:') {
                     window.location.href = href;
                     return;
                 }
 
-                if (!document.body.classList.contains('reading-mode')) {
-                    savedScrollPosition = window.scrollY || 0;
+                if (!document.body.classList.contains('is-reading')) {
+                    savedScrollY = window.scrollY || 0;
                 }
 
-                document.body.classList.add('reading-mode');
+                document.body.classList.add('is-reading');
                 viewTitle.textContent = title || 'Cours';
-                readerArticle.innerHTML = '<div class="reader-card-notice"><p>Chargement du chapitre…</p></div>';
                 window.scrollTo(0, 0);
 
-                if (pushState) {
-                    try {
-                        history.pushState({ href: href, title: title }, '', '#cours=' + encodeURIComponent(href));
-                    } catch (e) {}
+                if (pushHistory) {
+                    try { history.pushState({ href: href, title: title }, '', '#cours=' + encodeURIComponent(href)); } catch (e) {}
                 }
 
-                const htmlText = await fetchCourseContent(href);
-
+                const htmlText = await getChapterHTML(href);
                 if (!htmlText) {
-                    dynamicCourseStyles.textContent = '';
-                    readerArticle.innerHTML = `
-                        <div class="reader-card-notice">
-                            <h2>${title}</h2>
-                            <p>Dans l'aperçu isolé AI Studio, seul le fichier <code>index.html</code> est présent. Sur votre site GitHub Pages, le chapitre <code>${href}</code> s'affichera ici avec le mode sombre et le défilement mathématique mobile actifs.</p>
-                            <a class="reader-open-link" href="${href}" target="_blank" rel="noopener">Ouvrir ${href}</a>
-                        </div>
-                    `;
-                    window.renderAllMath(readerArticle);
+                    courseViewer.innerHTML = '<p style="color:var(--text-2);padding:1rem 0;">Chargement direct : <a href="' + href + '">' + href + '</a></p>';
                     return;
                 }
 
                 const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-                let styles = '';
-                doc.querySelectorAll('style').forEach(function (s) {
-                    styles += s.textContent + '\n';
+                doc.body.querySelectorAll('script, style, link').forEach(function (el) { el.remove(); });
+
+                // Neutralisation des styles inline codés en dur (évite tout fond blanc éblouissant en mode sombre)
+                doc.body.querySelectorAll('[style]').forEach(function (el) {
+                    el.style.background = '';
+                    el.style.backgroundColor = '';
+                    el.style.color = '';
+                    el.style.width = '';
+                    el.style.maxWidth = '';
+                    el.style.margin = '';
+                    el.style.padding = '';
                 });
-                dynamicCourseStyles.textContent = scopeCourseCSS(styles);
 
-                doc.body.querySelectorAll('script').forEach(function (s) { s.remove(); });
-                readerArticle.innerHTML = doc.body.innerHTML;
-
-                // Résolution des liens et images relatifs au sous-dossier du cours
-                try {
-                    const base = new URL(href, window.location.href);
-                    readerArticle.querySelectorAll('[src]').forEach(function (el) {
-                        const s = el.getAttribute('src');
-                        if (s && !s.startsWith('http') && !s.startsWith('data:') && !s.startsWith('/')) {
-                            el.setAttribute('src', new URL(s, base).href);
-                        }
-                    });
-                } catch (e) {}
-
-                window.renderAllMath(readerArticle);
+                courseViewer.innerHTML = doc.body.innerHTML;
+                window.renderMath(courseViewer);
             }
 
-            function closeCourseReader(pushState) {
-                if (!document.body.classList.contains('reading-mode')) return;
-                document.body.classList.remove('reading-mode');
-                readerArticle.innerHTML = '';
-                dynamicCourseStyles.textContent = '';
-                viewTitle.textContent = activeCategory === 'all' ? 'Tous les cours' : activeCategory;
-                window.scrollTo(0, savedScrollPosition);
-
-                if (pushState) {
-                    try {
-                        history.pushState(null, '', window.location.pathname + window.location.search);
-                    } catch (e) {}
+            function closeChapter(pushHistory) {
+                if (!document.body.classList.contains('is-reading')) return;
+                document.body.classList.remove('is-reading');
+                courseViewer.innerHTML = '';
+                const activePill = document.querySelector('.filter-pill.active');
+                viewTitle.textContent = activeCategory === 'all' ? 'Tous les cours' : (activePill ? activePill.firstChild.textContent.trim() : 'Cours');
+                window.scrollTo(0, savedScrollY);
+                if (pushHistory) {
+                    try { history.pushState(null, '', window.location.pathname + window.location.search); } catch (e) {}
                 }
             }
 
-            document.querySelectorAll('.course-list a').forEach(function (link) {
+            document.querySelectorAll('.chapter-list a').forEach(function (link) {
+                const href = link.getAttribute('href');
+                // Préchargement dès le survol ou le premier contact tactile
+                link.addEventListener('mouseenter', function () { getChapterHTML(href); }, { once: true, passive: true });
+                link.addEventListener('touchstart', function () { getChapterHTML(href); }, { once: true, passive: true });
+
                 link.addEventListener('click', function (e) {
                     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
                     e.preventDefault();
-                    const titleEl = link.querySelector('.chap-title');
-                    const titleText = titleEl ? titleEl.textContent.trim() : link.textContent.trim();
-                    openCourseReader(link.getAttribute('href'), titleText, true);
+                    const t = link.querySelector('.chap-title');
+                    openChapter(href, t ? t.textContent.trim() : link.textContent.trim(), true);
                 });
             });
 
-            backBtn.addEventListener('click', function () {
-                closeCourseReader(true);
-            });
+            backBtn.addEventListener('click', function () { closeChapter(true); });
 
             window.addEventListener('popstate', function (e) {
                 if (e.state && e.state.href) {
-                    openCourseReader(e.state.href, e.state.title, false);
+                    openChapter(e.state.href, e.state.title, false);
                 } else {
-                    closeCourseReader(false);
+                    closeChapter(false);
                 }
             });
 
-            // 5. Raccourcis clavier macOS (⌘K / Esc)
             window.addEventListener('keydown', function (e) {
                 if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                     e.preventDefault();
-                    if (document.body.classList.contains('reading-mode')) {
-                        closeCourseReader(true);
-                    }
+                    if (document.body.classList.contains('is-reading')) closeChapter(true);
                     searchInput.focus();
                     searchInput.select();
                 } else if (e.key === 'Escape') {
                     if (document.activeElement === searchInput) {
                         searchInput.value = '';
                         searchInput.blur();
-                        filterCourses();
-                    } else if (document.body.classList.contains('reading-mode')) {
-                        closeCourseReader(true);
+                        filterList();
+                    } else if (document.body.classList.contains('is-reading')) {
+                        closeChapter(true);
                     }
                 }
             });
