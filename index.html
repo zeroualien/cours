@@ -355,7 +355,7 @@
             font-size: 0.9rem;
         }
 
-        /* ================= LECTEUR DE COURS PLEINE LARGEUR (STYLE MARKDOWN ÉPURÉ) ================= */
+        /* ================= LECTEUR DE COURS PLEINE LARGEUR ================= */
         .reader-wrap {
             display: none;
             width: 100%;
@@ -378,7 +378,6 @@
             line-height: 1.7;
         }
 
-        /* Suppression de tout format A4 ou boîte centrée provenant des fichiers de cours */
         #course-viewer > div,
         #course-viewer > main,
         #course-viewer > article,
@@ -449,7 +448,7 @@
             margin-bottom: 1rem;
         }
 
-        /* Justifications & encadrés : trame verticale sobre à gauche, SANS cadre, texte bien dégagé */
+        /* Justifications & encadrés : trame strictement alignée sur la hauteur exacte du texte */
         #course-viewer blockquote,
         #course-viewer .callout,
         #course-viewer .justification,
@@ -460,18 +459,68 @@
         #course-viewer .remark,
         #course-viewer .note,
         #course-viewer .proof {
+            position: relative !important;
             background: transparent !important;
             background-color: transparent !important;
             color: var(--text-muted) !important;
             border: none !important;
-            border-left: 3px solid var(--quote-bar) !important;
             border-radius: 0 !important;
             box-shadow: none !important;
-            padding: 0.15rem 0 0.15rem 1.25rem !important;
+            padding: 0 0 0 1.25rem !important;
             margin: 1.25rem 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             overflow-x: auto !important;
+        }
+
+        /* Trame verticale calée au pixel près sur le sommet de la 1re ligne et la base de la dernière ligne */
+        #course-viewer blockquote::before,
+        #course-viewer .callout::before,
+        #course-viewer .justification::before,
+        #course-viewer .box::before,
+        #course-viewer .card::before,
+        #course-viewer .theorem::before,
+        #course-viewer .definition::before,
+        #course-viewer .remark::before,
+        #course-viewer .note::before,
+        #course-viewer .proof::before {
+            content: "" !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0.24em !important;
+            bottom: 0.22em !important;
+            width: 3px !important;
+            background-color: var(--quote-bar) !important;
+            border-radius: 1.5px !important;
+        }
+
+        /* Suppression des marges internes haute et basse qui faisaient dépasser la trame */
+        #course-viewer blockquote > :first-child,
+        #course-viewer .callout > :first-child,
+        #course-viewer .justification > :first-child,
+        #course-viewer .box > :first-child,
+        #course-viewer .card > :first-child,
+        #course-viewer .theorem > :first-child,
+        #course-viewer .definition > :first-child,
+        #course-viewer .remark > :first-child,
+        #course-viewer .note > :first-child,
+        #course-viewer .proof > :first-child {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        #course-viewer blockquote > :last-child,
+        #course-viewer .callout > :last-child,
+        #course-viewer .justification > :last-child,
+        #course-viewer .box > :last-child,
+        #course-viewer .card > :last-child,
+        #course-viewer .theorem > :last-child,
+        #course-viewer .definition > :last-child,
+        #course-viewer .remark > :last-child,
+        #course-viewer .note > :last-child,
+        #course-viewer .proof > :last-child {
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
         }
 
         #course-viewer blockquote *,
@@ -804,7 +853,7 @@
 
             searchInput.addEventListener('input', filterCourses);
 
-            // 5. Chargement ultra-rapide des chapitres avec repli automatique des chemins
+            // 5. Chargement ultra-rapide des chapitres
             async function fetchChapter(href) {
                 if (cache.has(href)) return cache.get(href);
                 const candidates = [
@@ -852,7 +901,6 @@
 
                 const doc = new DOMParser().parseFromString(htmlText, 'text/html');
 
-                // Extraction des styles structurels en supprimant toute contrainte de largeur max-width (anti-A4)
                 let css = '';
                 doc.querySelectorAll('style').forEach(function (s) { css += s.textContent + '\n'; });
                 chapterStyles.textContent = css
@@ -862,7 +910,6 @@
 
                 doc.body.querySelectorAll('script, style, link').forEach(function (el) { el.remove(); });
 
-                // Nettoyage des couleurs/fonds/marges inline hors KaTeX
                 doc.body.querySelectorAll('[style]').forEach(function (el) {
                     if (el.closest('.katex')) return;
                     el.style.background = '';
